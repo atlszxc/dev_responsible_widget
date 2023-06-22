@@ -1,0 +1,13 @@
+.layout {
+    &__content_wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &__main_content {
+            width: 100%;
+            min-height: 100vh;
+            padding: 0 18px;
+        }
+    }
+}
