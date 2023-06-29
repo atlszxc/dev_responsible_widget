@@ -62,6 +62,16 @@ export class AmoApiService {
         return response.data
     }
 
+    async getDeals(subdomine: string, token: string) {
+        const response = await axios.get(`https://${subdomine}/api/v4/leads`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        return response.data
+    }
+
     async updateDeals(subdomine: string, token: string, deaslResult: any) {
         await axios.patch(`https://${subdomine}/api/v4/leads`, [].concat(deaslResult), {
             headers: {

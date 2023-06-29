@@ -32,6 +32,10 @@ export class ManagerService {
         }
     }
 
+    async deleteManager(id: string) {
+        await this.managerRepository.delete({ id })
+    }
+
     async getManagers(subdomine: string, token: string) {
         const response = await axios.get(`https://${subdomine}/api/v4/users`, {
             headers: {

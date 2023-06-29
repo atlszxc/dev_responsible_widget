@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { AmoApiService } from 'src/amo-api/amo-api.service';
 import { Template } from 'src/template/template.model';
 import { uniqBy } from 'lodash'
@@ -15,11 +14,7 @@ export class AlgoritmService {
 
     async queueAlgoritm(template: Template) {
         try {
-            const deals = await axios.get(`https://${template.user.subdomine}/api/v4/leads`, {
-                headers: {
-                    Authorization: `Bearer ${template.user.access_token}`
-                }
-            })
+            const deals = await this.amoApiService.getDeals(template.user.subdomine, template.user.access_token)
 
             const managers = await this.amoApiService.getManagers(template.user.subdomine, template.user.access_token)
             const managerData = managers._embedded.users.filter(manager => manager.rights.is_active === true).map(item => ({
@@ -30,6 +25,13 @@ export class AlgoritmService {
                 user: template.user
             }))
 
+            for (const manager of template.managers) {
+                const hasManager = managerData.find(item => item.managerId === manager.managerId)
+                if(!hasManager) {
+                    await this.managerService.deleteManager(manager.id)
+                }
+            }
+
             template.managers.concat(managerData)
             template.managers = uniqBy(template.managers, (manager: Manager) => manager.managerId)
 
@@ -37,7 +39,7 @@ export class AlgoritmService {
  
             let idx = 0
             const deaslResult = []
-            for (const deal of deals.data._embedded.leads) {
+            for (const deal of deals._embedded.leads) {
                 deaslResult.push({ id: deal.id,  responsible_user_id: Number(template.managers[idx].managerId)})
                 idx + 1 > template.managers.length - 1 ? idx = 0 : idx += 1  
             }
