@@ -1,6 +1,7 @@
 import { IExtraOptionElement } from '../../types/common.type'
 import Styles from './styles.module.scss'
 import GlobalStyles from '../../pages/widgetTemplates/styles.module.scss'
+import classNames from 'classnames'
 
 type IButton<T> = {
     title: string,
@@ -14,17 +15,7 @@ const Button = ({ title, onClick, extraOptions, type = null }: IButton<IExtraOpt
         return (
             <button
                 onClick={() => onClick()}
-                className={`${GlobalStyles.drivable} ${extraOptions? Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' ') : ''}`}
-            >
-                { title }
-            </button>
-        )
-    }
-    if(type === 'drivable') {
-        return (
-            <button
-                onClick={() => onClick()}
-                className={`${Styles.drivable} ${extraOptions? Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' ') : ''}`}
+                className={classNames(GlobalStyles.drivable, extraOptions && Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' '))}
             >
                 { title }
             </button>
@@ -34,7 +25,7 @@ const Button = ({ title, onClick, extraOptions, type = null }: IButton<IExtraOpt
         return (
             <button
                 onClick={() => onClick()}
-                className={`${Styles.button} ${Styles.accent} ${extraOptions? Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' ') : ''}`}
+                className={classNames(Styles.button, Styles.accent, extraOptions && Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' '))}
             >
                 { title }
             </button>
@@ -43,7 +34,7 @@ const Button = ({ title, onClick, extraOptions, type = null }: IButton<IExtraOpt
     return (
         <button
             onClick={() => onClick()}
-            className={`${Styles.button} ${extraOptions? Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' ') : ''}`}
+            className={classNames(Styles.button, extraOptions && Object.keys(extraOptions).map((key: string) => extraOptions[key]).join(' '))}
         >
             { title }
         </button>

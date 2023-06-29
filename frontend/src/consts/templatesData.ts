@@ -1,22 +1,26 @@
 export const ALGHPRITMS = [
     {
         value: '0',
-        label: 'По количеству'
+        label: 'По очереди'
     },
     {
         value: '1',
-        label: 'По процентам'
+        label: 'По количеству'
     },
     {
         value: '2',
-        label: 'По дням'
+        label: 'По процентам'
     },
     {
         value: '3',
-        label: 'По количеству раундов'
+        label: 'По дням'
     },
     {
         value: '4',
+        label: 'По количеству раундов'
+    },
+    {
+        value: '5',
         label: 'По конверсии'
     },
 ]
@@ -48,7 +52,7 @@ export const DEPATMENTS = [
                 avatar: "",
                 free_user: "N",
                 group: "group_0",
-                id: "68",
+                id: "76110",
                 is_admin: "N",
                 login: "test@test.ru",
                 option: "Тест Тест",
@@ -63,7 +67,7 @@ export const DEPATMENTS = [
                 avatar: "",
                 free_user: "N",
                 group: "group_0",
-                id: "69",
+                id: "663142",
                 is_admin: "N",
                 login: "test@test.ru",
                 option: "Тест Тест",

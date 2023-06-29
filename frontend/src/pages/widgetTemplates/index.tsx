@@ -9,8 +9,7 @@ const WidgetTemplates = () => {
     const [toggleModal, setToggleModal] = useState<boolean>(false)
     const [template, setTemplate] = useState<ITemplate | null>(null)
 
-    const handleToggleModal = (event?: Event) => {
-        event && event.stopPropagation();
+    const handleToggleModal = () => {
         setToggleModal(!toggleModal)
     }
 
@@ -18,8 +17,7 @@ const WidgetTemplates = () => {
         setTemplate(template)
     }
 
-    const openModal = (event?: Event) => {
-        event && event.stopPropagation();
+    const openModal = () => {
         handleToggleModal(); 
         handleSetTemplate(null);
     }

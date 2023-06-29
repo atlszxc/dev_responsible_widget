@@ -13,15 +13,18 @@ type IInput<T> = {
 }
 
 const Input = ({ label, placeholder, extraOptions, onChange, value=null, style, className, classNameInput }: IInput<IExtraOptionElement>) => {
+    if (value) {
+        return (
+            <div style={style} className={`${Styles['input']} ${className}`}>
+                {label ? <label className={Styles['input__label']}>{label}</label> : null}
+                <input value={value} onChange={e => onChange(e.target.value)} className={`${Styles['input__inner']} ${classNameInput} ${extraOptions? Object.keys(extraOptions).map(key => extraOptions[key]).join(' ') : ''}`} type="text" placeholder={placeholder} />
+            </div>
+        )
+    }
     return (
         <div style={style} className={`${Styles['input']} ${className}`}>
             {label ? <label className={Styles['input__label']}>{label}</label> : null}
-            {
-                value?
-                <input value={value} onChange={e => onChange(e.target.value)} className={`${Styles['input__inner']} ${classNameInput} ${extraOptions? Object.keys(extraOptions).map(key => extraOptions[key]).join(' ') : ''}`} type="text" placeholder={placeholder} />
-                :
-                <input onChange={e => onChange(e.target.value)} className={`${Styles['input__inner']} ${extraOptions? Object.keys(extraOptions).map(key => extraOptions[key]).join(' ') : ''}`} type="text" placeholder={placeholder} />
-            }
+            <input onChange={e => onChange(e.target.value)} className={`${Styles['input__inner']} ${extraOptions? Object.keys(extraOptions).map(key => extraOptions[key]).join(' ') : ''}`} type="text" placeholder={placeholder} />
         </div>
     )
 }

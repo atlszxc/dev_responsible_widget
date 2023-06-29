@@ -62,7 +62,7 @@ export function isCustomType<T extends Object>(object: Object, key: keyof T): ob
     return key in object
 }
 
-export function isDepartment(object: any): object is IDepartment {
+export function isDepartment(object: IManager | IDepartment): object is IDepartment {
     return 'managers' in object
 }
 

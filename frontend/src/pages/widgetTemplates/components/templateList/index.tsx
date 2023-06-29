@@ -2,6 +2,8 @@ import classNames from "classnames"
 import { ITemplate } from "../../../../types/widgetTemplates.type"
 import Styles from '../../styles.module.scss'
 import Button from "../../../../components/button"
+import useTemplates from "../../../../hooks/useTemplates"
+import { templateService } from "../../../../api/template.service"
 
 interface ITemplateList {
     toggleModal(): void,
@@ -10,6 +12,10 @@ interface ITemplateList {
 }
 
 const TemplateList = ({ openModal }: ITemplateList) => {
+    const {templates, templatesIsLoading, templatesMutate} = useTemplates('31067610')
+
+    if(templatesIsLoading) return <h1>Loading...</h1>
+
     return (
         <section className={classNames(Styles["patterns__list"], Styles["patterns-list"])}>
             <div className={Styles["patterns-list__header"]}>
@@ -27,6 +33,20 @@ const TemplateList = ({ openModal }: ITemplateList) => {
                 <div className={Styles["patterns-list__item-inner"]}>05.12.2023 10:45</div>
                 <Button title="УДАЛИТЬ" type="drivable" onClick={() => console.log('click')} />
             </div>
+            {
+                templates.map((template: any) => (
+                    <div key={template.id} className={Styles["patterns-list__item"]}>
+                        <div className={Styles["patterns-list__item-inner"]}>{template.title}</div>
+                        <div className={Styles["patterns-list__item-inner"]}>Максим Зудин</div>
+                        <div className={Styles["patterns-list__item-inner"]}>{template.alghoritm}</div>
+                        <div className={Styles["patterns-list__item-inner"]}>05.12.2023 10:45</div>
+                        <Button title="УДАЛИТЬ" type="drivable" onClick={async () => {
+                            await templateService.deleteTemplate(template.id)
+                            templatesMutate()
+                        }} />
+                    </div>
+                ))
+            }
             <div className={classNames(Styles['patterns-list__button-add'], Styles['patterns-list-button-add'])} onClick={() => openModal()}>
                 <span className={Styles["patterns-list-button-add__plus"]}>
                     +

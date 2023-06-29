@@ -3,14 +3,16 @@ import { IManagerDistributionSettings, ISelectItem, ITemplate } from "../../../.
 import Styles from '../../styles.module.scss'
 import Button from "../../../../components/button"
 import Input from "../../../../components/input"
-import { useEffect, useState } from "react"
-import Select, { MultiValue } from 'react-select'
+import { useState } from "react"
+import Select from 'react-select'
 import { ALGHPRITMS, DEPATMENTS } from "../../../../consts/templatesData"
-import DepartmentList from "../ departmentList"
+import DepartmentList from "../departmentList"
 import DistributionCountDealsList from "../distributionCountDealsList"
 import DistributionDaysList from "../distributionDaysList"
 import DistributionTimeAcceptDealsSettings from "../distributionTimeAcceptDealsSettings"
 import DistributionPercentDealsList from "../dstributionPercentDealsList"
+import useTemplates from "../../../../hooks/useTemplates"
+import { templateService } from "../../../../api/template.service"
 
 interface IModal {
     template: ITemplate | null,
@@ -18,13 +20,17 @@ interface IModal {
 }
 
 const Modal = ({ toggle, template }: IModal) => {
+    const {templatesMutate} = useTemplates('31067610')
+
     const [templateName, setTemplateName] = useState<string>(template? template.title : '')
     const [alghoritm, setAlgoritm] = useState<ISelectItem | null>(template? template.alghoritm : { label: '', value: '' })
     const [managers, setManagers] = useState<Array<IManagerDistributionSettings>>(template? template.managers : [])
     const [timeAcceptDeal, setTimeAcceptDeals] = useState<string | null>(template? template.timeAcceptDeal : null)
     const [rounds, setRounds] = useState<number | null>(template? template.rounds : null)
 
-    const handleAddTemplate = () => {          
+    const handleAddTemplate = async () => {    
+        await templateService.createTemplate('31067610', { title: templateName, alghoritm: alghoritm?.label, timeAcceptDeal: timeAcceptDeal? timeAcceptDeal : 0, rounds: rounds? rounds: 0, managers })
+        templatesMutate()      
         toggle()
     }
 
@@ -48,10 +54,10 @@ const Modal = ({ toggle, template }: IModal) => {
                         </div>
                         <div className={Styles["pattern-modal__general--bottom"]}>
                             {
-                                alghoritm?.label === ALGHPRITMS[0].label ? <DistributionCountDealsList managers={managers} handler={setManagers} /> 
-                                : alghoritm?.label === ALGHPRITMS[1].label ? <DistributionPercentDealsList managers={managers} handler={setManagers} /> 
-                                : alghoritm?.label === ALGHPRITMS[2].label ? <DistributionDaysList managers={managers} handler={setManagers} /> 
-                                : alghoritm?.label === ALGHPRITMS[3].label ? <DistributionTimeAcceptDealsSettings timeAccptDealHandler={setTimeAcceptDeals} roundsHandler={setRounds} timeAcceptDeals={timeAcceptDeal} rounds={rounds} /> 
+                                alghoritm?.label === ALGHPRITMS[1].label ? <DistributionCountDealsList managers={managers} handler={setManagers} /> 
+                                : alghoritm?.label === ALGHPRITMS[2].label ? <DistributionPercentDealsList managers={managers} handler={setManagers} /> 
+                                : alghoritm?.label === ALGHPRITMS[3].label ? <DistributionDaysList managers={managers} handler={setManagers} /> 
+                                : alghoritm?.label === ALGHPRITMS[4].label ? <DistributionTimeAcceptDealsSettings timeAccptDealHandler={setTimeAcceptDeals} roundsHandler={setRounds} timeAcceptDeals={timeAcceptDeal} rounds={rounds} /> 
                                 : null
                             }
                         </div>
