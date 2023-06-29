@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { Config } from 'src/const/config';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
@@ -11,10 +12,10 @@ export class AmoApiService {
     async refreshAccessToken (id: string) {
         const user = await this.userService.getUser(id)
         const response = await axios.post(`https://${user.subdomine}/oauth2/access_token`, {
-                client_id: 'ba7b8297-93f9-4c7b-a895-b35edb724d5b',
-                client_secret: 'ixbCGP1Ik4hLtA2ixbG8d9nUu3HW1sQkkYym6OVwZrUYJb6McodvUIlay1uT4KN7',
-                grant_type: 'authorization_code',
-                redirect_uri: 'https://54d3-77-95-92-110.eu.ngrok.io/api/auth/',
+                client_id: Config.client_id,
+                client_secret: Config.client_secret,
+                grant_type: Config.grant_type,
+                redirect_uri: Config.redirect_uri,
             })
 
         await this.userService.updateUserToken(user.subdomine, response.data.access_token, response.data.refresh_token)
@@ -23,11 +24,11 @@ export class AmoApiService {
     async requestAccessToken(subdomine: string, code: string) {
         try {
          const response = await axios.post(`https://${subdomine}/oauth2/access_token`, {
-             client_id: 'ba7b8297-93f9-4c7b-a895-b35edb724d5b',
-             client_secret: 'ixbCGP1Ik4hLtA2ixbG8d9nUu3HW1sQkkYym6OVwZrUYJb6McodvUIlay1uT4KN7',
-             grant_type: 'authorization_code',
-             redirect_uri: 'https://54d3-77-95-92-110.eu.ngrok.io/api/auth/',
-             code,
+            client_id: Config.client_id,
+            client_secret: Config.client_secret,
+            grant_type: Config.grant_type,
+            redirect_uri: Config.redirect_uri,
+            code,
          })
  
  
@@ -59,5 +60,13 @@ export class AmoApiService {
         })
 
         return response.data
+    }
+
+    async updateDeals(subdomine: string, token: string, deaslResult: any) {
+        await axios.patch(`https://${subdomine}/api/v4/leads`, [].concat(deaslResult), {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
     }
 }
