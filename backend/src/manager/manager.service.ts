@@ -4,33 +4,12 @@ import { Manager } from './manager.model';
 import { Repository } from 'typeorm';
 import axios from 'axios';
 import { Template } from 'src/template/template.model';
-import { Cron } from '@nestjs/schedule';
-import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/user.model';
 
 @Injectable()
 export class ManagerService {
     constructor(
         @InjectRepository(Manager) private readonly managerRepository: Repository<Manager>,
-        private readonly userService: UserService
     ) {}
-
-    @Cron('0 0/24 * * *')
-    async updateManagersTask() {
-        const users = await this.userService.getUsers()
-        for (const user of users) {
-            const managers = await this.getManagers(user.subdomine, user.access_token)
-            const managersData = managers._embedded.users.filter(manager => manager.rights.is_active === true).map(item => ({
-                managerId: item.id,
-                name: item.name,
-                percent: 0,
-                count: 0,
-                user
-            }))
-    
-            await this.createManagers(managersData)
-        }
-    }
 
     async deleteManager(id: string) {
         await this.managerRepository.delete({ id })

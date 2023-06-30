@@ -8,7 +8,6 @@ import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Manager]),
-    UserModule,
   ],
   providers: [ManagerService],
   controllers: [ManagerController],
