@@ -1,28 +1,30 @@
-import { User } from "src/user/user.model";
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Template } from "src/template/template.model";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
 
-@Entity()
+export type ManagerDocument = HydratedDocument<Manager>
+
+@Schema()
 export class Manager {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
-
-    @Column()
+    @Prop({ required: true })
     managerId: number
 
-    @Column()
-    name: string
+    @Prop({ required: true, default: '' })
+    templateId: string
 
-    @Column()
-    percent: number
-
-    @Column()
+    @Prop({ required: true })
     count: number
 
-    @ManyToOne(() => User)
-    user: User
+    @Prop()
+    maxCount: number
 
-    @ManyToMany(() => Template, template => template)
-    @JoinTable()
-    templates: Template[]
+    @Prop({ required: true })
+    percent: number
+
+    @Prop({ default: 0 })
+    currentPercentCount: number
+
+    @Prop()
+    maxPercentCount: number
 }
+
+export const ManagerSchema = SchemaFactory.createForClass(Manager)

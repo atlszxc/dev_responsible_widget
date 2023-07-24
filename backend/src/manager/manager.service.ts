@@ -1,55 +1,76 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Manager } from './manager.model';
-import { Repository } from 'typeorm';
-import axios from 'axios';
-import { Template } from 'src/template/template.model';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Manager, ManagerDocument } from './manager.model';
+import { Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class ManagerService {
     constructor(
-        @InjectRepository(Manager) private readonly managerRepository: Repository<Manager>,
+        @InjectModel(Manager.name) private readonly managerModel: Model<Manager>
     ) {}
 
-    async deleteManager(id: string) {
-        await this.managerRepository.delete({ id })
+    public async getManager(id: number, templateId: string): Promise<ManagerDocument> {
+        return await this.managerModel.findOne({ managerId: id, templateId })
     }
 
-    async getManagers(subdomine: string, token: string) {
-        const response = await axios.get(`https://${subdomine}/api/v4/users`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-
-        return response.data
+    public async createManagers(data: Manager[]) {
+        try {
+            return await this.managerModel.insertMany(data)
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    async getManager(id: number) {
-        return await this.managerRepository.findOne({ where: {
-            managerId: id
-        } })
+
+    public async updateCount(managerId: number, templateId: ObjectId, count: number): Promise<void> {
+        try {
+            const manager = await this.managerModel.findOne({ managerId, templateId })
+            manager.count = count
+            await manager.save()
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    async updateManagerById(id: string, data: Template) {
-        const manager = await this.managerRepository.findOne(
-            { 
-                where: {
-                    id
-                },
-                relations: {
-                    templates: true
-                } 
+    public async updateMaxCount(managerId: number, templateId: ObjectId, count: number): Promise<void> {
+        try {
+            const manager = await this.managerModel.findOne({ managerId, templateId })
+            manager.maxCount = count
+            await manager.save()
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    public async updateCurrentPercentCount(managerId: number, templateId: string): Promise<void> {
+        try {
+            await this.managerModel.findOneAndUpdate({ managerId, templateId }, {
+                $inc: {
+                    currentPercentCount: 1
+                }
             })
-
-            manager.templates.concat(data)
-            await this.managerRepository.save(data)
-
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    async createManagers(data: Manager[]) {
-        await this.managerRepository.save(data)
+    public async updateMaxPercentCount(managerId: number, templateId: string, count: number): Promise<void> {
+        try {
+            const manager = await this.managerModel.findOne({ managerId, templateId })
+            manager.maxPercentCount = count
+            await manager.save()
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-
+    public async createManager(data: Manager): Promise<ManagerDocument> {
+        try {
+            const newManager = new this.managerModel(data)
+            return await newManager.save()
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
 }

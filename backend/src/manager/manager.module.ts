@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ManagerService } from './manager.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Manager } from './manager.model';
 import { ManagerController } from './manager.controller';
-import { UserModule } from 'src/user/user.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Manager, ManagerSchema } from './manager.model';
+
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Manager]),
+    MongooseModule.forFeature([{ name: Manager.name, schema: ManagerSchema }]),
   ],
   providers: [ManagerService],
   controllers: [ManagerController],

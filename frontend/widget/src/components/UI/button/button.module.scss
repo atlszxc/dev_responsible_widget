@@ -1,0 +1,24 @@
+.button {
+    background-color: inherit;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all .2s ease;
+    &.primary {
+        background: rgba(0, 0, 0, 0);
+        color: #3a86ff;
+        border: 1px solid #4c8bf7;
+        &:hover {
+            background: #fff;
+        }
+    }
+    &.accent {
+        background: #4c8bf7;
+        color: #fff;
+        border: 1px solid #4d85e6;
+        &:hover {
+            background: #447fe6;
+        }
+    }
+}
+

@@ -1,0 +1,21 @@
+.input {
+    display: block;
+    &__label {
+        color: #555;
+        display: inline-block;
+    }
+    &__inner {
+        width: 100%;
+        color: #111;
+        padding: 10px 12px 9px 12px;
+        line-height: 0;
+        box-sizing: border-box;
+        border-radius: 4px;
+        font-size: 15px;
+        border: 1px solid #ccc;
+        &:focus {
+            outline: 2px solid #3a86ff;
+            border-color: rgba(0, 0, 0, 0);
+        }
+    }
+}

@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.model';
-import { ManagerModule } from 'src/manager/manager.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './user.model';
+import { TemplateModule } from 'src/template/template.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    forwardRef(() => TemplateModule)
   ],
   providers: [UserService],
   exports: [

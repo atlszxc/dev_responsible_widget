@@ -1,33 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.model';
-import { Repository } from 'typeorm';
-import { ManagerService } from 'src/manager/manager.service';
-import { IUser } from './user.type';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User, UserDocument, UserSchema } from './user.model';
+import { Model } from 'mongoose';
+import { QueueFactory } from 'src/template/queueTemplate.factory';
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectRepository(User) private readonly userRepository: Repository<User>,
+        @InjectModel(User.name) private readonly userModel: Model<User>,
+        private readonly queueFactory: QueueFactory
     ) {}
 
-    getUsers = async () => {
-        return await this.userRepository.find()
+    public async gerUsersIds(): Promise<string[]> {
+        const users = await this.userModel.find()
+        return users.map(user => user.id)
     }
 
-    getUser = async (id: string) => {
-        return await this.userRepository.findOne({ where: { id } })
+    public async getUser(id: string): Promise<UserDocument> {
+        try {
+            return await this.userModel.findOne({ id })
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    createUser = async (data: IUser) => {
-        const user = await this.userRepository.save(data)
-        return user
+    public async getUserById(user: User) {
+        return await this.userModel.findOne(user)
     }
 
-    updateUserToken = async (subdomine: string, access_token: string, refresh_token: string) => {
-        await this.userRepository.update({ subdomine }, {
-            access_token,
-            refresh_token
-        })
+    public async createUser(data: User): Promise<UserDocument> {
+        try {
+            const newUser = new this.userModel(data)
+            this.queueFactory.add(newUser.id)
+            return await newUser.save()
+        } catch (error) {
+            console.log(error)
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
+
+    public async updateAccessTokens(subdomain: string, access_token: string, refresh_token: string): Promise<void> {
+        try {
+            await this.userModel.findOneAndUpdate({ subdomain }, {
+                $set: {
+                    access_token,
+                    refresh_token,
+                }
+            })
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
 }

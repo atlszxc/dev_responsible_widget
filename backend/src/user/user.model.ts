@@ -1,30 +1,29 @@
-import { Manager } from "src/manager/manager.model";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 import { Template } from "src/template/template.model";
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+export type UserDocument = HydratedDocument<User>
+
+@Schema()
 export class User {
-    @PrimaryColumn()
+    @Prop({ required: true })
     id: string
 
-    @Column()
+    @Prop({ required: true })
     access_token: string
 
-    @Column()
+    @Prop({ required: true })
     refresh_token: string
 
-    @Column()
-    expires_in: number
+    @Prop({ required: true })
+    subdomain: string
 
-    @Column()
-    subdomine: string
+    @Prop({ required: true })
+    code: string
 
-    @Column()
-    name: string
-
-    @OneToMany(() => Template, template => template)
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Template' }], default: [] })
     templates: Template[]
 
-    @OneToMany(() => Manager, manager => manager)
-    managers: Manager[]
 }
+
+export const UserSchema = SchemaFactory.createForClass(User)

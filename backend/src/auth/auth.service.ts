@@ -1,44 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AmoApiService } from 'src/amo-api/amo-api.service';
-import { ManagerService } from 'src/manager/manager.service';
+import { UserDocument } from 'src/user/user.model';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-        private readonly managerService: ManagerService,
         private readonly amoApiService: AmoApiService
     ) {}
 
-    async signUpUser(subdomine: string, code: string) {
+    public async signUpUser(subdomain: string, code: string): Promise<UserDocument> {
         try {
-            const tokenData = await this.amoApiService.requestAccessToken(subdomine, code)
-            const userData = await this.amoApiService.getUserData(subdomine, tokenData.access_token)
-           
-            const user = await this.userService.createUser({ 
-                id: userData.id, 
-                subdomine,
-                name: userData.name, 
-                access_token: tokenData.access_token, 
-                refresh_token: tokenData.refresh_token,
-                expires_in: tokenData.expires_in, 
-            })
-            
-            const managers = await this.amoApiService.getManagers(subdomine, tokenData.access_token)
-            const managersData = managers._embedded.users.filter(manager => manager.rights.is_active === true).map(item => ({
-                managerId: item.id,
-                name: item.name,
-                percent: 0,
-                count: 0,
-                user
-            }))
-    
-            await this.managerService.createManagers(managersData)
+            const tokenData = await this.amoApiService.requestAccessToken(subdomain, code)
+            if(tokenData) {
+                const userData = await this.amoApiService.getUserData(subdomain, tokenData.access_token, tokenData.refresh_token)
+                if(userData) {
+                    const user = await this.userService.createUser({
+                        id: userData.id,
+                        access_token: tokenData.access_token,
+                        refresh_token: tokenData.refresh_token,
+                        subdomain,
+                        code,
+                        templates: [] 
+                    })
 
-            return user
+                    return user
+                } else {
+                    throw new HttpException('Запрос на получение данных пользователя успешно проебан)', HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+            } else {
+                throw new HttpException('Запрос на получение токена субдомена успешно проебан)', HttpStatus.INTERNAL_SERVER_ERROR)
+            }
         } catch (error) {
-            console.log(error)
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+        
 }

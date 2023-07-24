@@ -1,66 +1,135 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Template } from './template.model';
-import { Repository } from 'typeorm';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Template, TemplateDocument } from './template.model';
+import { Model } from 'mongoose';
 import { ManagerService } from 'src/manager/manager.service';
-import { AlgoritmService } from 'src/algoritm/algoritm.service';
+import { CreateTemplateDto } from './dto/createTemplate.dto';
+import { Trigger, TriggerDocument } from './trigger.model';
+import { ManagerTemplateDocument, managerTrigger } from './managerTrigger';
 
 @Injectable()
 export class TemplateService {
     constructor(
-        @InjectRepository(Template) private readonly templateRepository: Repository<Template>,
+        @InjectModel(Template.name) private readonly templateModel: Model<Template>,
+        @InjectModel(Trigger.name) private readonly triggerModel: Model<Trigger>,
+        @InjectModel(managerTrigger.name) private readonly managerTriggerModel: Model<managerTrigger>,
         private readonly managerService: ManagerService,
-        private readonly algoritmService: AlgoritmService
     ) {}
 
-    getTemplates = async (userId: string) => {
-        return await this.templateRepository.find({ 
-            where: { 
-                user: {
-                    id: userId
-                } 
-            },
-            relations: {
-                managers: true
-            } 
-        })
-    }
-
-    getTemplate = async (id: string) => {
-        return await this.templateRepository.findOne({ where: { id } })
-    }
-
-    createTemplate = async (data: Template) => {
-        const managersDB = []
-        for (const manager of data.managers) {
-            const managerData = await this.managerService.getManager(Number(manager.id))
-            managersDB.push(managerData)
+    public async getTemplates(userId: string): Promise<Template[]> {
+        try {
+            return await this.templateModel.find({ userId }).populate('managers')
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
 
-        await this.templateRepository.save({
-            alghoritm: data.alghoritm,
-            user: data.user,
-            rounds: data.rounds,
-            title: data.title,
-            timeAcceptDeal: data.timeAcceptDeal,
-            managers: managersDB
+    public async getTemplate(id: string): Promise<TemplateDocument> {
+        try {
+            return await this.templateModel.findOne({ _id: id }).populate('managers')
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    public async createTrigger(triggerId: string, templateId: string): Promise<TriggerDocument> {
+        try {
+            return await new this.triggerModel({ id: triggerId, templateId: templateId }).save()
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
+
+    public async getTrigger(id: string): Promise<TriggerDocument> {
+        return await this.triggerModel.findOne({ id })
+    }
+
+    public async getTriggerManager(managerId: number, triggerId: string): Promise<ManagerTemplateDocument> {
+        return await this.managerTriggerModel.findOne({ managerId, triggerId })
+    }
+
+    public async clearTriggerManagers(triggerId: string): Promise<void> {
+        const triggerManagersData = await this.managerTriggerModel.find({ triggerId })
+        for (const triggerData of triggerManagersData) {
+            await triggerData.updateOne({
+                $set: {
+                    count: 0
+                }
+            })
+        }
+    }
+
+    public async createManagerTrigger(triggerId: string, managerId: number, templateId: string): Promise<ManagerTemplateDocument> {
+        try {
+            const manager = await this.managerService.getManager(managerId, templateId)
+            return await new this.managerTriggerModel({
+                triggerId: triggerId,
+                managerId: managerId,
+                maxCount: manager.maxCount,
+                percent: manager.percent,
+            }).save()
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
+
+    public async createTemplate(userId: string, data: CreateTemplateDto): Promise<void> {
+        try {
+            const template = await new this.templateModel({...data, managers: [], userId}).save()
+            const templateManagers = data.managers.map(manager => ({ 
+                managerId: Number(manager.managerId), 
+                count: 0,
+                maxCount: manager.count,
+                percent: manager.percent,
+                currentPercentCount: 0,
+                maxPercentCount: 0,
+                templateId: String(template._id)
+            }))
+
+            const managers = await this.managerService.createManagers(templateManagers)
+
+            await template.updateOne({ $set: {
+                managers: managers
+            } })
+        } catch (error) {
+            console.log(error)
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    public async updateTemplate(id: string, data: CreateTemplateDto) {
+        try {
+            const template = await this.templateModel.findOne({ _id: id })
+            const templateManagers = data.managers.map(manager => ({ 
+                managerId: Number(manager.managerId), 
+                count: 0,
+                maxCount: manager.count,
+                percent: manager.percent,
+                currentPercentCount: 0,
+                maxPercentCount: 0,
+                templateId: '',
+            }))
+
+            const managers = await this.managerService.createManagers(templateManagers)
+            template.updateOne({ 
+                $set: {
+                    title: data.title,
+                    algorithm: data.algorithm,
+                    managers: managers
+                }
+            })
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    public async updateCurrentIdx(id: string, idx: number): Promise<void> {
+        await this.templateModel.findOneAndUpdate({ _id: id }, {
+            $set: { currentManagerIdx: idx }
         })
     }
 
-    setTemplate = async (id: string) => {
-        const template = await this.templateRepository.findOne({ 
-            where: { id },
-            relations: {
-                managers:true,
-                user: true
-            }
-        })
-
-
-        await this.algoritmService.queueAlgoritm(template)
-    }
-
-    deleteTemplate = async (id: string) => {
-        await this.templateRepository.delete({ id })
+    public async deleteTemplate(templateId: string): Promise<void> {
+        await this.templateModel.deleteOne({ _id: templateId })
     }
 }

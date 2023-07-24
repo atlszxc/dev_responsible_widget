@@ -1,4 +1,4 @@
-export interface IAuth {
+export type AuthDto = {
     code: string,
     referer: string,
     client_id: string,

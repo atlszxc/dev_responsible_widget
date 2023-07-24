@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { AmoApiService } from './amo-api.service';
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    forwardRef(() => UserModule)
+  ],
   providers: [AmoApiService],
   exports: [AmoApiService]
 })

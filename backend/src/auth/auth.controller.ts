@@ -1,16 +1,22 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { IAuth } from './dto/auth.dto';
+import { AuthDto } from './dto/auth.dto';
+import { ROOT_ROUTES } from 'src/const/rootRoutes';
+import { UserDocument } from 'src/user/user.model';
 
-@Controller('auth')
+@Controller(ROOT_ROUTES.AUTH)
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
     ) {}
 
     @Get('/')
-    async auth(@Query() query: IAuth) {
-        console.log(query)
-        await this.authService.signUpUser(query.referer, query.code)
+    public async auth(@Query() query: AuthDto): Promise<UserDocument> {
+        try {
+            console.log(query)
+            return await this.authService.signUpUser(query.referer, query.code)
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 }

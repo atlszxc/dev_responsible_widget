@@ -1,20 +1,38 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TemplateService } from './template.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Template } from './template.model';
-import { TemplateController } from './template.controller';
-import { UserModule } from 'src/user/user.module';
+import { DistributionTemplateController } from './template.controller';
 import { ManagerModule } from 'src/manager/manager.module';
-import { AlgoritmModule } from 'src/algoritm/algoritm.module';
+import { AlgoritmModule } from 'src/algoritm/algorithm.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Template, TemplateSchema } from './template.model';
+import { AmoApiModule } from 'src/amo-api/amo-api.module';
+import { QueueFactory } from './queueTemplate.factory';
+import { UserModule } from 'src/user/user.module';
+import { Trigger, TriggerSchema } from './trigger.model';
+import { managerTrigger, ManagerTriggerSchema } from './managerTrigger';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Template]), 
-    UserModule,
+    MongooseModule.forFeature(
+      [
+        { name: Template.name, schema: TemplateSchema },
+        { name: Trigger.name, schema: TriggerSchema },
+        { name: managerTrigger.name, schema: ManagerTriggerSchema }
+      ]
+    ),
     ManagerModule,
     AlgoritmModule,
+    AmoApiModule,
+    forwardRef(() => UserModule)
   ],
-  providers: [TemplateService],
-  controllers: [TemplateController]
+  providers: [
+    TemplateService, 
+    QueueFactory, 
+  ],
+  controllers: [DistributionTemplateController],
+  exports: [
+    TemplateService,
+    QueueFactory,
+  ]
 })
 export class TemplateModule {}

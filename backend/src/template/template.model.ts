@@ -1,29 +1,39 @@
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 import { Manager } from "src/manager/manager.model";
-import { User } from "src/user/user.model";
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+export type TemplateDocument = HydratedDocument<Template>
+
+type Trigger = {
+    id: string,
+    currentManagerIdx: number
+}
+
+@Schema()
 export class Template {
-    @PrimaryGeneratedColumn('uuid')
-    id: string
-
-    @Column()
+    @Prop({ required: true })
     title: string
 
-    @Column()
-    alghoritm: string
+    @Prop({ required: true })
+    userId: string
 
-    @Column()
+    @Prop({ required: true })
+    algorithm: string
+
+    @Prop({ default: 0 })
+    totalDealCount: number
+
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Manager' }] })
+    managers: Manager[]
+
+    @Prop({ default: [] })
+    triggers: Trigger[]
+
+    @Prop({ default: '' })
     timeAcceptDeal: string
 
-    @Column()
+    @Prop({ default: 0 })
     rounds: number
-
-    @ManyToOne(() => User)
-    user: User
-
-    @ManyToMany(() => Manager, managers => managers, { cascade: true })
-    @JoinTable()
-    managers: Manager[]
-    
 }
+
+export const TemplateSchema = SchemaFactory.createForClass(Template)

@@ -1,0 +1,98 @@
+.distribution-by-day {
+	margin: 5px 15px 10px 10px;
+	max-height: 150px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: #203d49 rgba(100, 100, 100, 0.1);
+
+	&::-webkit-scrollbar {
+		width: 5px;
+		height: 0;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #eaeaea;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		border-radius: 3px;
+		background: #cdcdcd;
+	}
+
+	&__void {
+		font-weight: 700;
+		color: #FA5555;
+		margin: 15px 0 5px 10px;
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 3px 5px;
+		border-radius: 3px;
+
+		&:hover {
+			background: #eee;
+		}
+	}
+
+	&__name {
+		font-size: 16px;
+		flex: 0 1 20%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__days {
+		display: flex;
+
+		&>:not(:last-child) {
+			margin: 0 10px 0 0;
+		}
+
+		&-day {
+			border: 1px solid #2060c7;
+			background: #fff;
+			border-radius: 5px;
+			padding: 3px 5px;
+			cursor: pointer;
+			transition: all .3s ease;
+
+			&--active {
+				background: #336dc9;
+				color: #fff;
+			}
+
+			&:hover {
+				background: #86b2f9;
+				color: #fff;
+			}
+		}
+
+		&-inner {}
+	}
+
+	&__time {
+		display: flex;
+
+		&>:not(:last-child) {
+			margin: 0 10px 0 0;
+		}
+	}
+
+	&__from {
+		padding: 2px 4px;
+		font-size: 16px;
+		border: 1px solid #ccc;
+		border-radius: 3px;
+	}
+
+	&__to {
+		padding: 2px 4px;
+		font-size: 16px;
+		border: 1px solid #ccc;
+		border-radius: 3px;
+	}
+}

@@ -1,0 +1,25 @@
+.patterns {
+    * {
+        box-sizing: border-box;
+    }
+    & >:not(:last-child) {
+        margin: 0 0 10px 0;
+    }
+    &__header {
+        padding: 15px 15px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+        &__title {
+            color: #252525;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        &__subtitle {
+            margin: 10px 0 0 0;
+            color: #595959;
+        }
+    }
+}
