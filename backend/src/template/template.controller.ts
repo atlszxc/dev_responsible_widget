@@ -8,6 +8,7 @@ import { CreateTemplateDto } from './dto/createTemplate.dto';
 import { CountAlgorithmService } from 'src/algoritm/count-algorithm.service';
 import { QueueFactory } from './queueTemplate.factory';
 import { HookDto } from './dto/hook.dto';
+import { RoundsAlgorithm } from 'src/algoritm/rounds-algrithm';
 
 export enum AlgorithmType {
     QUEUE = 'По очереди',
@@ -23,6 +24,7 @@ export class DistributionTemplateController {
         private readonly queueAlgoritmService: QueueAlgoritmService,
         private readonly percentAlgorithmService: PercentAlgorithmService,
         private readonly countAlgorithmService: CountAlgorithmService,
+        private readonly roundsService: RoundsAlgorithm,
         private readonly queueFactory: QueueFactory
     ) {}
 
@@ -57,6 +59,12 @@ export class DistributionTemplateController {
             if(template.algorithm === AlgorithmType.COUNT) {
                 userQueue.add({
                     service: this.countAlgorithmService,
+                    args: [data.action.settings.widget.settings.templates, data.event.data.id, data.action.settings.widget.settings.triggerId]
+                })
+            }
+            if(template.algorithm === AlgorithmType.ROUNDS) {
+                userQueue.add({
+                    service: this.roundsService,
                     args: [data.action.settings.widget.settings.templates, data.event.data.id, data.action.settings.widget.settings.triggerId]
                 })
             }

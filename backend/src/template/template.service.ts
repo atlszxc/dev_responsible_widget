@@ -36,7 +36,7 @@ export class TemplateService {
         try {
             return await new this.triggerModel({ id: triggerId, templateId: templateId }).save()
         } catch (error) {
-            console.log(error.message)
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
@@ -49,13 +49,17 @@ export class TemplateService {
     }
 
     public async clearTriggerManagers(triggerId: string): Promise<void> {
-        const triggerManagersData = await this.managerTriggerModel.find({ triggerId })
-        for (const triggerData of triggerManagersData) {
-            await triggerData.updateOne({
-                $set: {
-                    count: 0
-                }
-            })
+        try {
+            const triggerManagersData = await this.managerTriggerModel.find({ triggerId })
+            for (const triggerData of triggerManagersData) {
+                await triggerData.updateOne({
+                    $set: {
+                        count: 0
+                    }
+                })
+            }
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)    
         }
     }
 
@@ -69,7 +73,7 @@ export class TemplateService {
                 percent: manager.percent,
             }).save()
         } catch (error) {
-            console.log(error.message)
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
@@ -79,6 +83,7 @@ export class TemplateService {
             const templateManagers = data.managers.map(manager => ({ 
                 managerId: Number(manager.managerId), 
                 count: 0,
+                title: manager.title,
                 maxCount: manager.count,
                 percent: manager.percent,
                 currentPercentCount: 0,
@@ -92,22 +97,22 @@ export class TemplateService {
                 managers: managers
             } })
         } catch (error) {
-            console.log(error)
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
-    public async updateTemplate(id: string, data: CreateTemplateDto) {
+    public async updateTemplate(id: string, data: CreateTemplateDto): Promise<void> {
         try {
             const template = await this.templateModel.findOne({ _id: id })
             const templateManagers = data.managers.map(manager => ({ 
                 managerId: Number(manager.managerId), 
                 count: 0,
+                title: manager.title,
                 maxCount: manager.count,
                 percent: manager.percent,
                 currentPercentCount: 0,
                 maxPercentCount: 0,
-                templateId: '',
+                templateId: template._id.toString(),
             }))
 
             const managers = await this.managerService.createManagers(templateManagers)
@@ -130,6 +135,20 @@ export class TemplateService {
     }
 
     public async deleteTemplate(templateId: string): Promise<void> {
-        await this.templateModel.deleteOne({ _id: templateId })
+        try {
+            const triggers = await this.triggerModel.find({ templateId })
+            for (const trigger of triggers) {
+                const managerTriggers = await this.managerTriggerModel.find({ triggerId: trigger.id })
+                for (const managerTrigger of managerTriggers) {
+                    const manager = await this.getTriggerManager(managerTrigger.managerId, trigger.id)
+                    await manager.deleteOne({ _id: manager._id })
+                    await managerTrigger.deleteOne({ _id: managerTrigger._id })                
+                }
+                await trigger.deleteOne({ _id: trigger._id })
+            }
+            await this.templateModel.deleteOne({ _id: templateId })
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 }

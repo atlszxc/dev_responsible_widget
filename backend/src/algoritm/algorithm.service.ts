@@ -14,12 +14,16 @@ export class AlgorithmService {
     ) {}
 
     public async createTrigger(triggerId: string, template: TemplateDocument) {
-        const trigger = await this.templateService.createTrigger(triggerId, template._id.toString())
-        for (const manager of template.managers) {
-            await this.templateService.createManagerTrigger(trigger.id, manager.managerId, template._id.toString())
-        }
+        try {
+            const trigger = await this.templateService.createTrigger(triggerId, template._id.toString())
+            for (const manager of template.managers) {
+                await this.templateService.createManagerTrigger(trigger.id, manager.managerId, template._id.toString())
+            }
 
-        return trigger
+            return trigger
+        } catch (error) {
+            console.log(error.message)
+        }
     }
 
     public async updateTemplateManager(template: TemplateDocument, manager: Manager, algorithmType: string): Promise<void> {

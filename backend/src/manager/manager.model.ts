@@ -12,6 +12,9 @@ export class Manager {
     templateId: string
 
     @Prop({ required: true })
+    title: string
+
+    @Prop({ required: true })
     count: number
 
     @Prop()

@@ -16,6 +16,9 @@ export class Trigger {
 
     @Prop({ default: 0 })
     currentQueueIdx: number
+
+    @Prop({ default: 0 })
+    currentRoundsIdx: number
 }
 
 export const TriggerSchema = SchemaFactory.createForClass(Trigger)

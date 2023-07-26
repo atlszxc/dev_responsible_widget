@@ -6,6 +6,7 @@ export const Config = {
 }
 
 export const PORT = 3000
+export const WSPORT = 8080
 
 export const DB_URI = 'mongodb://localhost:27017'
 export const DB_NAME = 'responsible_widget'
